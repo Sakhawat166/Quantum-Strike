@@ -5,7 +5,7 @@ function iDraw() is called again and again by the system.
 */
 
 #define MAX_ENEMIES 100
-Image spaceship, background , bullet,enemy,blust,scoreimage;
+Image spaceship, background , bullet,enemy,blust,scoreimage,menubg,start,levels,about,level1,level2,level3,back,title;
 int shipX = 300, shipY = 5, spaceship_width = 130 , spaceship_height = 130;
 int speed = 20;
 int bullet_active = 0, fire=0, bulletX = shipX+spaceship_width/2-10, bulletY = shipY + spaceship_height;
@@ -13,6 +13,7 @@ int screen_width = 800, screen_height= 600;
 int enemy_active = 0;
 int score = 0;
 int enemy_ship[4];
+int gamestate=0,levelstate=1;
 
 //>>>>>>>>>>>>>>> function prototypes <<<<<<<<<<<<<<//
  
@@ -159,8 +160,8 @@ void auto_fire(){
     if (fire) {
         if (bullet_active == 0){ 
             bullet_active= 1;
-            bulletX = shipX+spaceship_width/2;
-            bulletY = shipY + spaceship_height/2;
+            bulletX = shipX+spaceship_width/2-11;
+            bulletY = shipY + spaceship_height/2+40;
     }
 }
 }
@@ -212,13 +213,70 @@ void Loadassets() {
     iResizeImage(&blust,50,50);
 
     iLoadImage(&scoreimage,"score.PNG");
+
+    iLoadImage(&menubg, "menubg.jpg");
+    iResizeImage(&menubg, 800, 600);
+
+    iLoadImage(&start, "start.png");
+    iResizeImage(&start, 170, 40);
+    iLoadImage(&levels, "levels.png");
+    iResizeImage(&levels, 170, 40);
+    iLoadImage(&about, "about.png");
+    iResizeImage(&about, 170, 40);
+
+    iLoadImage(&level1, "level1.png");
+    iResizeImage(&level1, 170, 40);
+    iLoadImage(&level2, "level2.png");
+    iResizeImage(&level2, 170, 40);
+    iLoadImage(&level3, "level3.png");
+    iResizeImage(&level3, 170, 40);
+
+    iLoadImage(&back, "back.png");
+    iResizeImage(&back, 50, 50);
+
+    
+    iLoadImage(&title, "title.png");
+    iResizeImage(&title, 550, 120);
+
+
+
+
 }
 
 void iDraw() {
     iClear();
-    
+    if(gamestate==0){
+    //menu
+
+        iShowLoadedImage(0, 0, &menubg);
+        iShowLoadedImage(120, 450, &title);
+        iShowLoadedImage(300, 350, &start);
+        iShowLoadedImage(300, 300, &levels);
+        iShowLoadedImage(300, 250, &about);
+ 
+
+  
+    }
+    else if(gamestate==2){
+    //levels
+        iShowLoadedImage(0, 0, &menubg);
+        iShowLoadedImage(300, 350, &level1);
+        iShowLoadedImage(300, 300, &level2);
+        iShowLoadedImage(300, 250, &level3);
+        iShowLoadedImage(50, 550, &back);
+        
+    }
+
+    else if(gamestate==3){
+    //about
+        iShowLoadedImage(50, 550, &back);
+
+    }
+
+    else if(gamestate==1){
     // Draw background first
     iShowLoadedImage(0, 0, &background);
+
 
     // Draw spaceship
     iShowLoadedImage(shipX, shipY, &spaceship);
@@ -229,13 +287,15 @@ void iDraw() {
         iShowLoadedImage(bulletX,bulletY, &bullet);
        
     }
-
     enemy_make();
     move_enemy();
 
     blust_make();
 
     score_count();
+    }
+
+    
     
 }
 
@@ -270,6 +330,21 @@ void iMouse(int button, int state, int mx, int my)
     if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
     {
         // place your codes here
+              if(mx>=300&&mx<=470&&my>=350&&my<=490) gamestate=1;
+        else if(mx>=300&&mx<=470&&my>=300&&my<=340) gamestate=2;
+        else if(mx>=300&&mx<=470&&my>=250&&my<=290) gamestate=3;
+
+        if(gamestate==2){
+              if(mx>=300&&mx<=470&&my>=350&&my<=490) levelstate=1;
+        else if(mx>=300&&mx<=470&&my>=300&&my<=340) levelstate=2;
+        else if(mx>=300&&mx<=470&&my>=250&&my<=290) levelstate=3;
+
+        if(mx>=50&&mx<=100&&my>=550&&my<=600) gamestate=0;
+
+        
+
+
+        }
     }
     if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
     {
@@ -295,8 +370,10 @@ void iKeyboard(unsigned char key)
     if (key == ' '){
     fire = !fire;
     enemy_active = !enemy_active;
-        
-}
+    }
+
+    if(key == 'q') exit(0);
+
 
 
 }
