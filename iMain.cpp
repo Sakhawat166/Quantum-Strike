@@ -5,7 +5,7 @@ function iDraw() is called again and again by the system.
 */
 
 #define MAX_ENEMIES 100
-Image spaceship, background , bullet,enemy,blust,scoreimage,menubg,start,levels,about,level1,level2,level3,back,title;
+Image spaceship, background , bullet,enemy,blust,scoreimage,menubg,start,levels,about,startbold,aboutbold,levelsbold,level1,level2,level3,level1bold,level2bold,level3bold,back,title;
 int shipX = 300, shipY = 5, spaceship_width = 130 , spaceship_height = 130;
 int speed = 20;
 int bullet_active = 0, fire=0, bulletX = shipX+spaceship_width/2-10, bulletY = shipY + spaceship_height;
@@ -13,7 +13,10 @@ int screen_width = 800, screen_height= 600;
 int enemy_active = 0;
 int score = 0;
 int enemy_ship[4];
-int gamestate=0,levelstate=1;
+int gamestate=0,levelstate=1,mousestate=0;
+int imgcount=60, incr=10, imgpos[100], bgY=0;
+Image bgImages[60];
+
 
 //>>>>>>>>>>>>>>> function prototypes <<<<<<<<<<<<<<//
  
@@ -28,6 +31,9 @@ void blust_make();
 void blust_set(int x, int y);
 void blust_update();
 void score_count();
+void bg_render();
+void move_bg();
+void initialize_imgpos();
 
 
 
@@ -41,7 +47,7 @@ void score_count() {
     int boxHeight = 30;
 
 
-   iShowLoadedImage(boxX,boxY,&scoreimage);
+//    iShowLoadedImage(boxX,boxY,&scoreimage);
 
     
     iSetColor(255, 255, 255); 
@@ -111,6 +117,7 @@ void enemy_set(int index, int col, int row){
 
 
 void move_enemy(){
+    if(gamestate==1){
   for (int i=0; i< MAX_ENEMIES; i++){
 
      if (enemies[i].alive && enemy_active){
@@ -124,6 +131,7 @@ void move_enemy(){
     }
 
     bullet_hit_enemy();
+}
 }
 
 
@@ -194,6 +202,31 @@ void bullet_hit_enemy(){
     }
 }
 
+void initialize_imgpos(){
+    int i,j=0;
+    for(i=0;i<imgcount;i++){
+     
+        imgpos[i]=j;
+        j=j+incr;
+    }
+}
+void move_bg(){
+    for(int i=0;i<imgcount;i++){
+        imgpos[i]-=incr;
+    }
+     for(int i=0;i<imgcount;i++){
+        if(imgpos[i]<0) 
+        imgpos[i]=screen_height-incr;
+    }
+}
+void bg_render(){
+    for(int i=0;i<imgcount;i++){
+        
+        iShowLoadedImage(0,imgpos[i],&bgImages[i]);
+      
+    }
+}
+
 
 //>>>>>>>>>>>>>>>>> image load <<<<<<<<<<<<<<<<//
 void Loadassets() {
@@ -214,29 +247,52 @@ void Loadassets() {
 
     iLoadImage(&scoreimage,"score.PNG");
 
-    iLoadImage(&menubg, "menubg.jpg");
+    iLoadImage(&menubg, "assets/menubg.jpg");
     iResizeImage(&menubg, 800, 600);
 
-    iLoadImage(&start, "start.png");
+    iLoadImage(&start, "assets/start.png");
     iResizeImage(&start, 170, 40);
-    iLoadImage(&levels, "levels.png");
+    iLoadImage(&levels, "assets/levels.png");
     iResizeImage(&levels, 170, 40);
-    iLoadImage(&about, "about.png");
+    iLoadImage(&about, "assets/about.png");
     iResizeImage(&about, 170, 40);
+    iLoadImage(&startbold, "assets/startbold.png");
+    iResizeImage(&startbold, 170, 40);
+    iLoadImage(&levelsbold, "assets/levelsbold.png");
+    iResizeImage(&levelsbold, 170, 40);
+    iLoadImage(&aboutbold, "assets/aboutbold.png");
+    iResizeImage(&aboutbold, 170, 40);
 
-    iLoadImage(&level1, "level1.png");
+    iLoadImage(&level1, "assets/level1.png");
     iResizeImage(&level1, 170, 40);
-    iLoadImage(&level2, "level2.png");
+    iLoadImage(&level2, "assets/level2.png");
     iResizeImage(&level2, 170, 40);
-    iLoadImage(&level3, "level3.png");
+    iLoadImage(&level3, "assets/level3.png");
     iResizeImage(&level3, 170, 40);
+    iLoadImage(&level1bold, "assets/level1bold.png");
+    iResizeImage(&level1bold, 170, 40);
+    iLoadImage(&level2bold, "assets/level2bold.png");
+    iResizeImage(&level2bold, 170, 40);
+    iLoadImage(&level3bold, "assets/level3bold.png");
+    iResizeImage(&level3bold, 170, 40);
 
-    iLoadImage(&back, "back.png");
+    iLoadImage(&back, "assets/back.png");
     iResizeImage(&back, 50, 50);
 
     
-    iLoadImage(&title, "title.png");
+    iLoadImage(&title, "assets/title.png");
     iResizeImage(&title, 550, 120);
+
+    int j=0;
+    char bgimagepath[100];
+    for (int i = imgcount-1; i>=0; i--) {
+        sprintf(bgimagepath, "assets/images/row-%d-column-1.png", i+1);
+            
+        iLoadImage(&bgImages[j], bgimagepath);
+        iResizeImage(&bgImages[j],screen_width ,incr);
+        j++;
+      
+    }
 
 
 
@@ -250,19 +306,26 @@ void iDraw() {
 
         iShowLoadedImage(0, 0, &menubg);
         iShowLoadedImage(120, 450, &title);
-        iShowLoadedImage(300, 350, &start);
-        iShowLoadedImage(300, 300, &levels);
-        iShowLoadedImage(300, 250, &about);
+        if(mousestate==1) iShowLoadedImage(300, 350, &startbold);
+        else iShowLoadedImage(300, 350, &start);
+        if(mousestate==2) iShowLoadedImage(300, 300, &levelsbold);
+        else iShowLoadedImage(300, 300, &levels);
+        if(mousestate==3) iShowLoadedImage(300, 250, &aboutbold);
+        else iShowLoadedImage(300, 250, &about);
  
 
   
     }
     else if(gamestate==2){
     //levels
+    
         iShowLoadedImage(0, 0, &menubg);
-        iShowLoadedImage(300, 350, &level1);
-        iShowLoadedImage(300, 300, &level2);
-        iShowLoadedImage(300, 250, &level3);
+        if(mousestate==1) iShowLoadedImage(300, 350, &level1bold);
+        else iShowLoadedImage(300, 350, &level1);
+        if(mousestate==2) iShowLoadedImage(300, 300, &level2bold);
+        else iShowLoadedImage(300, 300, &level2);
+        if(mousestate==3) iShowLoadedImage(300, 250, &level3bold);
+        else iShowLoadedImage(300, 250, &level3);
         iShowLoadedImage(50, 550, &back);
         
     }
@@ -270,12 +333,14 @@ void iDraw() {
     else if(gamestate==3){
     //about
         iShowLoadedImage(50, 550, &back);
+        iText(200,200," this is about the about of whatabout of the about of this game");
 
     }
 
     else if(gamestate==1){
     // Draw background first
-    iShowLoadedImage(0, 0, &background);
+    // iShowLoadedImage(0, 0, &background);
+     bg_render();
 
 
     // Draw spaceship
@@ -284,7 +349,7 @@ void iDraw() {
 
     if (bullet_active){
         iSetColor(255,255,255);
-        iShowLoadedImage(bulletX,bulletY, &bullet);
+        iShowLoadedImage(bulletX, bulletY, &bullet);
        
     }
     enemy_make();
@@ -310,6 +375,13 @@ function iMouseMove() is called when the user moves the mouse.
 void iMouseMove(int mx, int my)
 {
     // place your codes here
+            if (mx >= 300 && mx <= 470 && my >= 350 && my <= 390)
+            mousestate = 1;
+        else if (mx >= 300 && mx <= 470 && my >= 300 && my <= 340)
+            mousestate = 2;
+        else if (mx >= 300 && mx <= 470 && my >= 250 && my <= 290)
+            mousestate = 3;
+            else mousestate = 0;
 }
 
 /*
@@ -327,25 +399,34 @@ function iMouse() is called when the user presses/releases the mouse.
 */
 void iMouse(int button, int state, int mx, int my)
 {
-    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
-    {
-        // place your codes here
-              if(mx>=300&&mx<=470&&my>=350&&my<=490) gamestate=1;
-        else if(mx>=300&&mx<=470&&my>=300&&my<=340) gamestate=2;
-        else if(mx>=300&&mx<=470&&my>=250&&my<=290) gamestate=3;
-
-        if(gamestate==2){
-              if(mx>=300&&mx<=470&&my>=350&&my<=490) levelstate=1;
-        else if(mx>=300&&mx<=470&&my>=300&&my<=340) levelstate=2;
-        else if(mx>=300&&mx<=470&&my>=250&&my<=290) levelstate=3;
-
-        if(mx>=50&&mx<=100&&my>=550&&my<=600) gamestate=0;
-
-        
-
-
-        }
+   if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+{
+    // Main menu buttons
+    if (gamestate == 0) {
+        if (mx >= 300 && mx <= 470 && my >= 350 && my <= 390)
+            gamestate = 1; // Start Game
+        else if (mx >= 300 && mx <= 470 && my >= 300 && my <= 340)
+            gamestate = 2; // Level Select
+        else if (mx >= 300 && mx <= 470 && my >= 250 && my <= 290)
+            gamestate = 3; // About
     }
+
+    // Level select menu
+    else if (gamestate == 2) {
+        if (mx >= 300 && mx <= 470 && my >= 350 && my <= 390)
+            levelstate = 1;
+        else if (mx >= 300 && mx <= 470 && my >= 300 && my <= 340)
+            levelstate = 2;
+        else if (mx >= 300 && mx <= 470 && my >= 250 && my <= 290)
+            levelstate = 3;
+
+        // Back button
+        if (mx >= 50 && mx <= 100 && my >= 550 && my <= 600)
+            gamestate = 0;
+    }
+}
+
+    
     if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN)
     {
         // place your codes here
@@ -410,11 +491,13 @@ int main(int argc, char *argv[])
     glutInit(&argc, argv);
     iSetTransparency(1);
     Loadassets();
+    initialize_imgpos();
     iSetTimer(20,move_bullet);
     iSetTimer(30,auto_fire);
     iSetTimer(100,move_enemy);
     iSetTimer(20,blust_update);
     iSetTimer(1000,enemy_add_row);
+    iSetTimer(70 ,move_bg);
     iInitialize(800, 600, "Space Shooter");
     return 0;
 }
