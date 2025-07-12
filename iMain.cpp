@@ -219,13 +219,7 @@ void move_bg(){
         imgpos[i]=screen_height-incr;
     }
 }
-void bg_render(){
-    for(int i=0;i<imgcount;i++){
-        
-        iShowLoadedImage(0,imgpos[i],&bgImages[i]);
-      
-    }
-}
+
 
 
 //>>>>>>>>>>>>>>>>> image load <<<<<<<<<<<<<<<<//
@@ -313,7 +307,7 @@ void iDraw() {
         if(mousestate==3) iShowLoadedImage(300, 250, &aboutbold);
         else iShowLoadedImage(300, 250, &about);
  
-
+        
   
     }
     else if(gamestate==2){
@@ -340,8 +334,12 @@ void iDraw() {
     else if(gamestate==1){
     // Draw background first
     // iShowLoadedImage(0, 0, &background);
-     bg_render();
+     
+         for(int i=0;i<imgcount;i++){
 
+        iShowLoadedImage(0,imgpos[i],&bgImages[i]);
+
+    }
 
     // Draw spaceship
     iShowLoadedImage(shipX, shipY, &spaceship);
