@@ -1,0 +1,1 @@
+iShowLoadedImage(boxX,boxY,&scoreimage);
