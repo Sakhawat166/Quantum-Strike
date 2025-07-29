@@ -1403,6 +1403,7 @@ void loadScores()
     }
 }
 
+<<<<<<< HEAD
 void drawScoreboardScreen()
 {
     iShowLoadedImage(0, 0, &coverbase);
@@ -1420,6 +1421,92 @@ void drawScoreboardScreen()
         
         iText(480, 500 - i * 40, name, GLUT_BITMAP_HELVETICA_18);
         iText(830, 500 - i * 40, score, GLUT_BITMAP_HELVETICA_18);
+=======
+void initialize_imgpos(){
+    int i,j=0;
+    for(i=0;i<imgcount;i++){
+     
+        imgpos[i]=j;
+        j=j+incr;
+    }
+}
+void move_bg(){
+    for(int i=0;i<imgcount;i++){
+        imgpos[i]-=incr;
+    }
+     for(int i=0;i<imgcount;i++){
+        if(imgpos[i]<0) 
+        imgpos[i]=screen_height-incr;
+    }
+}
+
+
+
+//>>>>>>>>>>>>>>>>> image load <<<<<<<<<<<<<<<<//
+void Loadassets() {
+    iLoadImage(&spaceship, "spaceship new.PNG");
+    iResizeImage(&spaceship, spaceship_width, spaceship_height); 
+
+    iLoadImage(&background, "background new.jpg");
+    iResizeImage(&background, 800, 600);
+
+    iLoadImage(&bullet,"bullet.PNG");
+    iResizeImage(&bullet, 30, 60);
+
+    iLoadImage(&enemy, "enemy.PNG");
+    iResizeImage(&enemy,40,40);
+
+    iLoadImage(&blust, "blust.PNG");
+    iResizeImage(&blust,50,50);
+
+    iLoadImage(&scoreimage,"score.PNG");
+
+    iLoadImage(&menubg, "assets/menubg.jpg");
+    iResizeImage(&menubg, 800, 600);
+
+    iLoadImage(&start, "assets/start.png");
+    iResizeImage(&start, 170, 40);
+    iLoadImage(&levels, "assets/levels.png");
+    iResizeImage(&levels, 170, 40);
+    iLoadImage(&about, "assets/about.png");
+    iResizeImage(&about, 170, 40);
+    iLoadImage(&startbold, "assets/startbold.png");
+    iResizeImage(&startbold, 170, 40);
+    iLoadImage(&levelsbold, "assets/levelsbold.png");
+    iResizeImage(&levelsbold, 170, 40);
+    iLoadImage(&aboutbold, "assets/aboutbold.png");
+    iResizeImage(&aboutbold, 170, 40);
+
+    iLoadImage(&level1, "assets/level1.png");
+    iResizeImage(&level1, 170, 40);
+    iLoadImage(&level2, "assets/level2.png");
+    iResizeImage(&level2, 170, 40);
+    iLoadImage(&level3, "assets/level3.png");
+    iResizeImage(&level3, 170, 40);
+    iLoadImage(&level1bold, "assets/level1bold.png");
+    iResizeImage(&level1bold, 170, 40);
+    iLoadImage(&level2bold, "assets/level2bold.png");
+    iResizeImage(&level2bold, 170, 40);
+    iLoadImage(&level3bold, "assets/level3bold.png");
+    iResizeImage(&level3bold, 170, 40);
+
+    iLoadImage(&back, "assets/back.png");
+    iResizeImage(&back, 50, 50);
+
+    
+    iLoadImage(&title, "assets/title.png");
+    iResizeImage(&title, 550, 120);
+
+    int j=0;
+    char bgimagepath[100];
+    for (int i = imgcount-1; i>=0; i--) {
+        sprintf(bgimagepath, "assets/images/row-%d-column-1.png", i+1);
+            
+        iLoadImage(&bgImages[j], bgimagepath);
+        iResizeImage(&bgImages[j],screen_width ,incr);
+        j++;
+      
+>>>>>>> f48f9376d605c77c6277315738300ddcb18e4def
     }
 
     iText(screenWidth / 2 - 100, 100, "Press 'B' to go back", GLUT_BITMAP_HELVETICA_18);
@@ -1452,9 +1539,36 @@ void iDraw()
 
     iClear();
 
+<<<<<<< HEAD
     if(currentMenu == 0){
         iShowLoadedImage(0,0,&coverbase);
         iText(screenWidth/2-50, 100 ,"Loading...",GLUT_BITMAP_HELVETICA_18);
+=======
+        iShowLoadedImage(0, 0, &menubg);
+        iShowLoadedImage(120, 450, &title);
+        if(mousestate==1) iShowLoadedImage(300, 350, &startbold);
+        else iShowLoadedImage(300, 350, &start);
+        if(mousestate==2) iShowLoadedImage(300, 300, &levelsbold);
+        else iShowLoadedImage(300, 300, &levels);
+        if(mousestate==3) iShowLoadedImage(300, 250, &aboutbold);
+        else iShowLoadedImage(300, 250, &about);
+ 
+        
+  
+    }
+    else if(gamestate==2){
+    //levels
+    
+        iShowLoadedImage(0, 0, &menubg);
+        if(mousestate==1) iShowLoadedImage(300, 350, &level1bold);
+        else iShowLoadedImage(300, 350, &level1);
+        if(mousestate==2) iShowLoadedImage(300, 300, &level2bold);
+        else iShowLoadedImage(300, 300, &level2);
+        if(mousestate==3) iShowLoadedImage(300, 250, &level3bold);
+        else iShowLoadedImage(300, 250, &level3);
+        iShowLoadedImage(50, 550, &back);
+        
+>>>>>>> f48f9376d605c77c6277315738300ddcb18e4def
     }
 
    else if (currentMenu == 1)
@@ -1462,9 +1576,37 @@ void iDraw()
         drawMainMenu();
     }
 
+<<<<<<< HEAD
     else if (currentMenu == 2)
     {
         drawNameInputScreen();
+=======
+    else if(gamestate==1){
+    // Draw background first
+    // iShowLoadedImage(0, 0, &background);
+     
+         for(int i=0;i<imgcount;i++){
+
+        iShowLoadedImage(0,imgpos[i],&bgImages[i]);
+
+    }
+
+    // Draw spaceship
+    iShowLoadedImage(shipX, shipY, &spaceship);
+    
+
+    if (bullet_active){
+        iSetColor(255,255,255);
+        iShowLoadedImage(bulletX, bulletY, &bullet);
+       
+    }
+    enemy_make();
+    move_enemy();
+
+    blust_make();
+
+    score_count();
+>>>>>>> f48f9376d605c77c6277315738300ddcb18e4def
     }
 
     else if (currentMenu == 3)
