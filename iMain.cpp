@@ -113,11 +113,11 @@ int playerHealth = 500; // 100% health
 const int maxHealth = 500;
 
 // ==================== UI Buttons =======================
-int buttonWidth = 420;
-int buttonHeight = 52;
+int buttonWidth = 300;
+int buttonHeight = 75;
 int buttonX = screenWidth / 2 - buttonWidth / 2;
 int buttonYStart = 483;
-int buttonGap = 78;
+int buttonGap = 100;
 
 // ==================== Score & Pause ====================
 int score = 0;
@@ -215,6 +215,10 @@ Image shooterbullet;
 Image maingamebackground[5];
 Image multiplier;
 Image boss,aienemy;
+Image helpPage,gameOverScreen,nameInputScreen;
+Image aboutIcon;
+Image about1, about2;
+Image bossBullet;
 
 
 int coverTimerID;
@@ -233,6 +237,12 @@ void LoadResources()
     iLoadImage(&bullet, "assets/bullet.png");
     iResizeImage(&bullet, 10, 20);
 
+    iLoadImage(&bossBullet,"assets/shooterbullet.png");
+    iResizeImage(&bossBullet, 20,20);
+
+    iLoadImage(&about2, "assets/about2.jpg");
+    iResizeImage(&about2, screenWidth, screenHeight);
+
     iLoadImage(&translucent, "assets/translucent.png");
     iResizeImage(&translucent,300, 400 );
     iLoadImage(&translucent2, "assets/translucent.png");
@@ -242,15 +252,15 @@ void LoadResources()
     iLoadImage(&translucent3, "assets/translucent3.png");
     iResizeImage(&translucent3, 1200, 500 );
 
-    iLoadImage(&menubutton[0], "assets/newgame.png");
+    iLoadImage(&menubutton[0], "assets/newgame.jpg");
     iResizeImage(&menubutton[0], buttonWidth, buttonHeight );
-    iLoadImage(&menubutton[1], "assets/scoreboard.png");
+    iLoadImage(&menubutton[1], "assets/scoreboard.jpg");
     iResizeImage(&menubutton[1], buttonWidth, buttonHeight );
-    iLoadImage(&menubutton[2], "assets/help.png");
+    iLoadImage(&menubutton[2], "assets/helpButton.jpg");
     iResizeImage(&menubutton[2], buttonWidth, buttonHeight );
-    iLoadImage(&menubutton[3], "assets/about.png");
+    iLoadImage(&menubutton[3], "assets/aboutButton.jpg");
     iResizeImage(&menubutton[3], buttonWidth, buttonHeight );
-    iLoadImage(&menubutton[4], "assets/exit.png");
+    iLoadImage(&menubutton[4], "assets/exit.jpg");
     iResizeImage(&menubutton[4], buttonWidth, buttonHeight );
       for (int i = 0; i < 5; i++)
     {
@@ -273,6 +283,9 @@ void LoadResources()
         iLoadImage(&maingamebackground[i], path);
         iResizeImage(&maingamebackground[i], screenWidth, screenHeight);
     }
+
+    iLoadImage(&about1,"assets/about1.jpg");
+    iResizeImage(&about1, screenWidth,screenHeight);
 
     iLoadImage(&enemy[0], "assets/enemy_01.png");
     iResizeImage(&enemy[0], enemySize, enemySize);
@@ -324,11 +337,20 @@ void LoadResources()
     iResizeImage(&highlightPlayerShip[2], 300, 300);
     
 
+    iLoadImage(&helpPage, "assets/help.jpg");
+    iResizeImage(&helpPage,screenWidth,screenHeight);
+
+    iLoadImage(&nameInputScreen, "assets/name_input.jpg");
+    iResizeImage(&nameInputScreen, screenWidth, screenHeight);
+
+    iLoadImage(&aboutIcon,"assets/about_icon.png");
+    iResizeImage(&aboutIcon, 50,50);
+
     iLoadImage(&bomb, "assets/bomb.png");
     iResizeImage(&bomb, 150, 150);
 
     iLoadImage(&armor, "assets/armor.png");
-    iResizeImage(&armor, 75, 75);
+    iResizeImage(&armor, 79, 87);
 
     iLoadImage(&HP, "assets/health_pack.png");
     iResizeImage(&HP, 75, 75);
@@ -341,6 +363,51 @@ void LoadResources()
     iResizeImage(&rapid_fire,75,75);
 
 }
+
+void resetGameState()
+{
+    // Reset player
+    playerX = 400;
+    playerY = 100;
+    playerHealth = maxHealth;
+    playerLife = selectedLevel;
+    isGameOver = false;
+
+    // Reset enemies
+    for (int i = 0; i < maxEnemies; i++)
+        enemyActive[i] = false;
+
+    // Reset bullets
+    for (int i = 0; i < maxBullets; i++)
+        bulletActive[i] = false;
+    bulletCount = 0;
+
+    // Reset power-ups
+    for (int i = 0; i < totalPowerUps; i++)
+        powerUps[i].active = false;
+
+    // Reset AI enemy
+    aiEnemyActive = false;
+
+    // Reset boss
+    bossActive = false;
+    initializeBossSystem();
+
+    // Reset score effects
+    for (int i = 0; i < maxScoreAnims; i++)
+        scoreAnims[i].active = false;
+
+    // Reset explosion
+    for (int i = 0; i < maxExplosions; i++)
+        explosions[i].active = false;
+
+    // Reset all power-up timers
+    armorActive = false;
+    rapidFireActive = false;
+    scoreMultiplierActive = false;
+    megaBombActive = false;
+}
+
 
 void goToMenu()
 {
@@ -389,6 +456,7 @@ void drawMainMenu()
     {
         int y = buttonYStart - i * buttonGap;
         iShowLoadedImage(buttonX, y, &menubutton[i]);
+        iShowLoadedImage(100, screenHeight-100, &aboutIcon);
         // iSetColor(50, 50, 255); // Button color
         // iRectangle(buttonX, y, buttonWidth, buttonHeight);
 
@@ -401,23 +469,25 @@ void drawMainMenu()
 
 void drawNameInputScreen()
 {
-    iShowLoadedImage(0, 0, &gameover);
-    iSetColor(255, 255, 255);
-    iText(screenWidth / 2 - 80, 400, "Enter Your Name:", GLUT_BITMAP_TIMES_ROMAN_24);
+    // iShowLoadedImage(0, 0, &gameover);
+    // iSetColor(255, 255, 255);
+    // iText(screenWidth / 2 - 80, 400, "Enter Your Name:", GLUT_BITMAP_TIMES_ROMAN_24);
 
-    iSetColor(0, 0, 0);
-    iFilledRectangle(screenWidth / 2 - 150, 300, 300, 50); // Input Box
+    // iSetColor(0, 0, 0);
+    // iFilledRectangle(screenWidth / 2 - 150, 300, 300, 50); // Input Box
 
+    
+    iShowLoadedImage(0,0,&nameInputScreen);
     iSetColor(255, 255, 255);
-    iRectangle(screenWidth / 2 - 150, 300, 300, 50);
-    iText(screenWidth / 2 - 140, 320, playerName, GLUT_BITMAP_HELVETICA_18);
+    // iRectangle(screenWidth / 2 - 150, 300, 300, 50);
+    iText(600, 500, playerName, GLUT_BITMAP_HELVETICA_18);
 }
 
 void drawLevelSelectScreen()
 {
     iShowLoadedImage(0, 0, &coverbase);
     iSetColor(255, 255, 255);
-    iText(screenWidth / 2-60, 550, "Select a Level", GLUT_BITMAP_TIMES_ROMAN_24);
+    iText(screenWidth / 2-60, 550, "Select a Level", GLUT_BITMAP_HELVETICA_18);
 
     
        for (int i = 0; i < menuCount; i++)
@@ -431,7 +501,7 @@ void drawSpaceshipSelectScreen()
 {
     iShowLoadedImage(0, 0, &coverbase);
     iSetColor(255, 255, 255);
-    iText(screenWidth / 2 - 100, 450, "Choose Your Spaceship", GLUT_BITMAP_TIMES_ROMAN_24);
+    iText(screenWidth / 2 - 100, 450, "Choose Your Spaceship", GLUT_BITMAP_HELVETICA_18);
 
     for (int i = 0; i < totalShips; i++)
     {
@@ -478,6 +548,7 @@ void checkBulletEnemyCollision()
                     {
                         bulletActive[i] = false;
                         enemyActive[j] = false;
+                        iPlaySound("music_explosion.wav",false,100);
                         score += (10 * selectedLevel) * scoreMultiplierValue;
                         createScoreAnim(enemyX[j] + 10, enemyY[j] + 20, 10); // place +10 above enemy
 
@@ -703,6 +774,7 @@ void drawGameScreen()
         {
             // iFilledRectangle(bulletX[i], bulletY[i], 5, 10);
             iShowLoadedImage(bulletX[i], bulletY[i], &bullet);
+            // iPlaySound("bullet.wav,false,100");
         }
     }
 
@@ -835,8 +907,9 @@ void drawGameScreen()
         {
             if (bossBulletActive[i])
             {
-                iSetColor(255, 100, 0);
-                iFilledRectangle(bossBulletX[i], bossBulletY[i], 5, 15);
+                // iSetColor(255, 100, 0);
+                // iFilledRectangle(bossBulletX[i], bossBulletY[i], 5, 15);
+                iShowLoadedImage(bossBulletX[i],bossBulletY[i],&bossBullet);
             }
         }
     }
@@ -1019,12 +1092,13 @@ void moveEnemies()
     {
         if (enemyActive[i] && !isPaused)
         {
-            int thisSpeed = (enemyType[i] == FAST) ? enemySpeed + 2 : enemySpeed;
+            int thisSpeed = (enemyType[i] == FAST) ? enemySpeed + 10 : enemySpeed;
             enemyY[i] -= thisSpeed;
 
             if (enemyY[i] < 0)
             {
                 enemyActive[i] = false;
+                playerHealth--;
                 
                     
 
@@ -1076,6 +1150,7 @@ void handleMegaBomb()
             if (enemyActive[i])
             {
                 enemyActive[i] = false;
+                iPlaySound("explosion.wav",false,100);
                 score += 10 * scoreMultiplierValue;
                 createScoreAnim(enemyX[i] + 10, enemyY[i] + 20, 10); // place +10 above enemy
 
@@ -1345,18 +1420,9 @@ void updateEnemies()
 void drawGameOverScreen()
 {
     iShowLoadedImage(0, 0, &gameover);
-    iSetColor(255, 0, 0);
-    iText(screenWidth / 2 - 60, screenHeight / 2 + 40, "GAME OVER", GLUT_BITMAP_TIMES_ROMAN_24);
+    
 
-    iSetColor(255, 255, 255);
-    char msg[100];
-    sprintf(msg, "Player: %s   Level: %d", playerName, selectedLevel);
-    iText(screenWidth / 2 - 80, screenHeight / 2, msg);
-
-    sprintf(msg, "Score: %d", score);
-    iText(screenWidth / 2 - 50, screenHeight / 2 - 20, msg);
-
-    iText(screenWidth / 2 - 130, screenHeight / 2 - 50, "Press 'R' to Restart or 'Q' to Quit", GLUT_BITMAP_HELVETICA_18);
+    // iText(screenWidth / 2 - 130, screenHeight / 2 - 50, "Press 'R' to Restart or 'Q' to Quit", GLUT_BITMAP_HELVETICA_18);
 }
 
 void createScoreAnim(int x, int y, int value)
@@ -1403,7 +1469,6 @@ void loadScores()
     }
 }
 
-<<<<<<< HEAD
 void drawScoreboardScreen()
 {
     iShowLoadedImage(0, 0, &coverbase);
@@ -1421,92 +1486,6 @@ void drawScoreboardScreen()
         
         iText(480, 500 - i * 40, name, GLUT_BITMAP_HELVETICA_18);
         iText(830, 500 - i * 40, score, GLUT_BITMAP_HELVETICA_18);
-=======
-void initialize_imgpos(){
-    int i,j=0;
-    for(i=0;i<imgcount;i++){
-     
-        imgpos[i]=j;
-        j=j+incr;
-    }
-}
-void move_bg(){
-    for(int i=0;i<imgcount;i++){
-        imgpos[i]-=incr;
-    }
-     for(int i=0;i<imgcount;i++){
-        if(imgpos[i]<0) 
-        imgpos[i]=screen_height-incr;
-    }
-}
-
-
-
-//>>>>>>>>>>>>>>>>> image load <<<<<<<<<<<<<<<<//
-void Loadassets() {
-    iLoadImage(&spaceship, "spaceship new.PNG");
-    iResizeImage(&spaceship, spaceship_width, spaceship_height); 
-
-    iLoadImage(&background, "background new.jpg");
-    iResizeImage(&background, 800, 600);
-
-    iLoadImage(&bullet,"bullet.PNG");
-    iResizeImage(&bullet, 30, 60);
-
-    iLoadImage(&enemy, "enemy.PNG");
-    iResizeImage(&enemy,40,40);
-
-    iLoadImage(&blust, "blust.PNG");
-    iResizeImage(&blust,50,50);
-
-    iLoadImage(&scoreimage,"score.PNG");
-
-    iLoadImage(&menubg, "assets/menubg.jpg");
-    iResizeImage(&menubg, 800, 600);
-
-    iLoadImage(&start, "assets/start.png");
-    iResizeImage(&start, 170, 40);
-    iLoadImage(&levels, "assets/levels.png");
-    iResizeImage(&levels, 170, 40);
-    iLoadImage(&about, "assets/about.png");
-    iResizeImage(&about, 170, 40);
-    iLoadImage(&startbold, "assets/startbold.png");
-    iResizeImage(&startbold, 170, 40);
-    iLoadImage(&levelsbold, "assets/levelsbold.png");
-    iResizeImage(&levelsbold, 170, 40);
-    iLoadImage(&aboutbold, "assets/aboutbold.png");
-    iResizeImage(&aboutbold, 170, 40);
-
-    iLoadImage(&level1, "assets/level1.png");
-    iResizeImage(&level1, 170, 40);
-    iLoadImage(&level2, "assets/level2.png");
-    iResizeImage(&level2, 170, 40);
-    iLoadImage(&level3, "assets/level3.png");
-    iResizeImage(&level3, 170, 40);
-    iLoadImage(&level1bold, "assets/level1bold.png");
-    iResizeImage(&level1bold, 170, 40);
-    iLoadImage(&level2bold, "assets/level2bold.png");
-    iResizeImage(&level2bold, 170, 40);
-    iLoadImage(&level3bold, "assets/level3bold.png");
-    iResizeImage(&level3bold, 170, 40);
-
-    iLoadImage(&back, "assets/back.png");
-    iResizeImage(&back, 50, 50);
-
-    
-    iLoadImage(&title, "assets/title.png");
-    iResizeImage(&title, 550, 120);
-
-    int j=0;
-    char bgimagepath[100];
-    for (int i = imgcount-1; i>=0; i--) {
-        sprintf(bgimagepath, "assets/images/row-%d-column-1.png", i+1);
-            
-        iLoadImage(&bgImages[j], bgimagepath);
-        iResizeImage(&bgImages[j],screen_width ,incr);
-        j++;
-      
->>>>>>> f48f9376d605c77c6277315738300ddcb18e4def
     }
 
     iText(screenWidth / 2 - 100, 100, "Press 'B' to go back", GLUT_BITMAP_HELVETICA_18);
@@ -1514,24 +1493,7 @@ void Loadassets() {
 
 void drawHelpPage()
 {
-    iShowLoadedImage(0, 0, &coverbase);
-    iShowLoadedImage(screenWidth/2 - 170, 80, &translucent2);
-    iSetColor(255, 255, 255);
-    iText(screenWidth/2 - 130, 550, "Help / Controls", GLUT_BITMAP_TIMES_ROMAN_24);
-
-    iText(screenWidth/2 - 130, 500, "Arrow Keys / WASD: Move Ship", GLUT_BITMAP_HELVETICA_18);
-    iText(screenWidth/2 - 130, 470, "Space: Shoot", GLUT_BITMAP_HELVETICA_18);
-    iText(screenWidth/2 - 130, 440, "P: Pause / Resume", GLUT_BITMAP_HELVETICA_18);
-    iText(screenWidth/2 - 130, 410, "M: Toggle Sound", GLUT_BITMAP_HELVETICA_18);
-
-    iText(screenWidth/2 - 130, 370, "Power-Ups:");
-    iText(screenWidth/2 - 110, 340, "+HP: Restore Health");
-    iText(screenWidth/2 - 110, 320, "x3/x5: Score Multiplier");
-    iText(screenWidth/2 - 110, 300, "ARM: Temporary Invincibility");
-    iText(screenWidth/2 - 110, 280, "SPD: Rapid Fire");
-    iText(screenWidth/2 - 110, 260, "BOMB: Mega Bomb (Destroys all enemies)");
-
-    iText(screenWidth/2 - 130, 100, "Press 'B' to return to Menu", GLUT_BITMAP_HELVETICA_18);
+    iShowLoadedImage(0,0,&helpPage);
 }
 
 void iDraw()
@@ -1539,36 +1501,9 @@ void iDraw()
 
     iClear();
 
-<<<<<<< HEAD
     if(currentMenu == 0){
         iShowLoadedImage(0,0,&coverbase);
         iText(screenWidth/2-50, 100 ,"Loading...",GLUT_BITMAP_HELVETICA_18);
-=======
-        iShowLoadedImage(0, 0, &menubg);
-        iShowLoadedImage(120, 450, &title);
-        if(mousestate==1) iShowLoadedImage(300, 350, &startbold);
-        else iShowLoadedImage(300, 350, &start);
-        if(mousestate==2) iShowLoadedImage(300, 300, &levelsbold);
-        else iShowLoadedImage(300, 300, &levels);
-        if(mousestate==3) iShowLoadedImage(300, 250, &aboutbold);
-        else iShowLoadedImage(300, 250, &about);
- 
-        
-  
-    }
-    else if(gamestate==2){
-    //levels
-    
-        iShowLoadedImage(0, 0, &menubg);
-        if(mousestate==1) iShowLoadedImage(300, 350, &level1bold);
-        else iShowLoadedImage(300, 350, &level1);
-        if(mousestate==2) iShowLoadedImage(300, 300, &level2bold);
-        else iShowLoadedImage(300, 300, &level2);
-        if(mousestate==3) iShowLoadedImage(300, 250, &level3bold);
-        else iShowLoadedImage(300, 250, &level3);
-        iShowLoadedImage(50, 550, &back);
-        
->>>>>>> f48f9376d605c77c6277315738300ddcb18e4def
     }
 
    else if (currentMenu == 1)
@@ -1576,37 +1511,9 @@ void iDraw()
         drawMainMenu();
     }
 
-<<<<<<< HEAD
     else if (currentMenu == 2)
     {
         drawNameInputScreen();
-=======
-    else if(gamestate==1){
-    // Draw background first
-    // iShowLoadedImage(0, 0, &background);
-     
-         for(int i=0;i<imgcount;i++){
-
-        iShowLoadedImage(0,imgpos[i],&bgImages[i]);
-
-    }
-
-    // Draw spaceship
-    iShowLoadedImage(shipX, shipY, &spaceship);
-    
-
-    if (bullet_active){
-        iSetColor(255,255,255);
-        iShowLoadedImage(bulletX, bulletY, &bullet);
-       
-    }
-    enemy_make();
-    move_enemy();
-
-    blust_make();
-
-    score_count();
->>>>>>> f48f9376d605c77c6277315738300ddcb18e4def
     }
 
     else if (currentMenu == 3)
@@ -1638,8 +1545,13 @@ void iDraw()
         drawHelpPage();
     }
     else if (currentMenu == 9){
-        iShowLoadedImage(0, 0, &coverbase);
-        iShowLoadedImage(150, 100, &translucent3);
+        // iShowLoadedImage(0, 0, &coverbase);
+        // iShowLoadedImage(150, 100, &translucent3);
+        iShowLoadedImage(0,0, &about2);
+    }
+
+    else if (currentMenu == 10){
+        iShowLoadedImage(0,0,&about1);
     }
 
     // future: else if (currentMenu == 2) --> Game Page etc.
@@ -1700,6 +1612,11 @@ void iMouse(int button, int state, int mx, int my)
                     }
                 }
             }
+
+            if (mx>100 && mx<150 && my>screenHeight-100 && my<screenHeight-50){
+                currentMenu = 10;
+                printf("clicked");
+            }
         }
 
         // Level Select
@@ -1714,6 +1631,7 @@ void iMouse(int button, int state, int mx, int my)
                
                     selectedLevel = i+1;
                     playerLife = selectedLevel;
+                    resetGameState();
                     currentMenu = 4;
                     printf("Level %d selected\n", selectedLevel);
                 }
@@ -1799,6 +1717,10 @@ void iKeyboard(unsigned char key)
         {
             isPaused = !isPaused; // Toggle Pause
         }
+
+        if (key == 'b'){
+            currentMenu = 1;
+        }
     }
 
     // Game Over screen
@@ -1813,7 +1735,7 @@ void iKeyboard(unsigned char key)
             fclose(fp);
         }
 
-        if (key == 'r')
+        if (key == 'b')
         {
             currentMenu = 1;
             playerLife = 3;
@@ -1860,6 +1782,10 @@ void iKeyboard(unsigned char key)
         }
     }
 
+    else if(currentMenu == 10){
+        if(key == 'b') currentMenu = 1;
+    }
+
     // Global Quit
     if (key == 'q')
     {
@@ -1882,14 +1808,11 @@ int main(int argc, char *argv[])
     glutInit(&argc, argv);
     LoadResources();
     loadExplosionFrames();
-    coverTimerID = iSetTimer(3000, goToMenu);
+    coverTimerID = iSetTimer(5000, goToMenu);
     iSetTimer(16, gameLoop);
     iSetTimer(500, spawnEnemy);
     iInitializeSound();
-    channel1 = iPlaySound("war.wav",true,100);
-    
-    
-    
+    channel1 = iPlaySound("war.wav",true,50);
     iInitialize(screenWidth, screenHeight, "Space Shooter - Main Menu");
     return 0;
 }
